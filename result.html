@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Generated News</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 to-purple-200 min-h-screen flex items-center justify-center px-4 py-8">
+
+    <div class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-8 space-y-6 animate-fade-in">
+        <h1 class="text-4xl font-extrabold text-center text-gray-800">📰 Your AI-Generated News</h1>
+        
+        <!-- For thumbnail just in case -->
+        <div class="flex justify-center">
+            <img src="https://via.placeholder.com/600x300" alt="Generated News Image"
+                 class="rounded-xl shadow-md border border-gray-200 max-w-full">
+        </div>
+
+        <div class="space-y-3">
+            <h2 class="text-2xl font-semibold text-indigo-700">Headline: The Future of AI-Powered Journalism</h2>
+            <p class="text-gray-700 text-justify leading-relaxed">
+                In a groundbreaking development, artificial intelligence has begun generating real-time news stories based on images and user prompts. Experts say this will revolutionize how people access and interpret information in the digital age. The image analyzed suggests a significant event unfolding with social and political implications...
+            </p>
+        </div>
+
+        <div class="text-center">
+            <a href="/" class="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-xl shadow transition duration-300">
+                🔙 Back to Upload
+            </a>
+        </div>
+    </div>
+
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.6s ease-out both;
+        }
+    </style>
+
+</body>
+</html>
