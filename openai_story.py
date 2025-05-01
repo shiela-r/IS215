@@ -10,22 +10,34 @@ def story_generator(labels):
     if not labels:
         scene = "unknown scene"
     elif len(labels) == 1:
-        scene = f"scene with: {labels[0]}"
+        scene = f"{labels[0]}"
     elif len(labels) == 2:
-        scene = f"scene with:{labels[0]} and {labels[1]}"
+        scene = f"{labels[0]} and {labels[1]}"
     else:
-        scene = f"scene with:{', '.join(labels[:-1])}, and {labels[-1]}"
+        scene = f"{', '.join(labels[:-1])}, and {labels[-1]}"
 
     # Creating prompt
-    prompt = (f"Write a fictional article based on this scene: {scene}.")
+    prompt = (f"The image shows the following: {scene}. With these elements, determine a theme (e.g. sports, technology,"
+              f"politics, etc and based from that, generate a fictional news article. I prefer starting with a staccato"
+              f"lead. Do not add any elements not included among those listed above. Work with just the list given."
+              f"Put the determined theme right below the end of the article.")
+    # the last line in the prompt can be removed once finalized, it is just for checking what them does the AI detect
+    # based from the labels provided (e.g. detected by AWS Rekognition)
     
     # Calling Open API
     api_url = "https://is215-openai.upou.io/v1/chat/completions"
     api_key = os.environ.get("OPENAI_API_KEY")
 
     headers = {"Content-type": "application/json", "Authorization": f"Bearer {api_key}" }
-    payload = {"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": prompt}], "temperature": 0.7}
-    
+    payload = {"model": "gpt-3.5-turbo",
+               "messages": [
+                            {"role": "system", "content": "you are a journalist that writes only based on the facts"
+                                                          "given to you and nothing more."},
+                            {"role": "user", "content": prompt}
+
+                            ], "temperature": 0.7
+
+               }
     
     try:
         response = requests.post(api_url, headers=headers, json=payload)
