@@ -18,7 +18,7 @@ def story_generator(labels):
 
     # Creating prompt
     prompt = (f"A short news article must be written based only on the given list of labels: {scene}"
-              f"With these elements, determine a theme (e.g. sports, technology,politics, etc and based from that, generate a fictional news article."
+              f"With these elements, determine a theme (e.g. sports, technology,politics, etc), and based from that, generate a fictional news article."
               f"Start with a staccato lead."
               f"The article must be written using only the physical objects or visible elements that are named in the label list."
               f"No object, character, or visible detail that is not listed should be included."
