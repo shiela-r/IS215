@@ -1,0 +1,82 @@
+try:
+        # Preset labels (this could be based on your original Python code)
+        labels = ["Window", "Table", "Books", "Library", "Quiet"]
+
+        # Sentence builder
+        if not labels:
+            scene = "unknown scene"
+        elif len(labels) == 1:
+            scene = f"{labels[0]}"
+        elif len(labels) == 2:
+            scene = f"{labels[0]} and {labels[1]}"
+        else:
+            scene = f"{', '.join(labels[:-1])}, and {labels[-1]}"
+
+        # Prompt creation
+       prompt = (f"A short news article must be written based only on the given list of labels: {scene}"
+              f"With these elements, determine a theme (e.g. sports, technology,politics, etc), and based from that, generate a fictional news article."
+              f"Start with a staccato lead."
+              f"The article must be written using only the physical objects or visible elements that are named in the label list."
+              f"No object, character, or visible detail that is not listed should be included."
+              f"If a label refers to something abstract, such as an emotion or activity, keep it abstract."
+              f"Do not turn it into a person, an action, or an event."
+              f"Treat nominalized words like “Studying” or “Happiness” as they are."
+              f"Do not convert them into subject-verb-object form."
+              f"Do not add people doing the action unless the label directly includes them."
+              f"You may describe general uses or cultural associations related to the labels, but only if it is clear that they are not visible in the image."
+              f"Do not create agents, events, sounds, or extra visual details."
+              f"Do not imply that anything is seen in the image unless it is listed in the labels."
+              f"Use plain English, philosophical, political, unslanted, eloquent, and abstract language, indirect phrasing, and also natural and conversational tone and with sense of humor."
+              f"Varied and metaphorical expressions should be used based on the labels, when possible, and label words should not be repeated exactly."
+              f"You may include vague or suggestive descriptions, as long as you stay within what the label list allows."
+              f"The article should be clear, faithful to the labels, and written in full sentences, 250 to 300 words."
+              f"Keep your descriptions grounded, witty, mature, purposeful, full of sense, sound, logical and valid, and giving precious and brilliant life lessons. Do not add anything extra.")
+
+        # API call to OpenAI proxy
+        api_url = "https://is215-openai.upou.io/v1/chat/completions"
+        api_key = "galang-0yvua8ytST"
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
+
+        payload = {
+            "model": "gpt-3.5-turbo",
+            "messages": [
+                {"role": "system", "content": "you are a journalist that writes only based on the facts given to you and nothing more."},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.7
+        }
+
+        response = requests.post(api_url, headers=headers, json=payload)
+        response.raise_for_status()
+        data = response.json()
+        story = data["choices"][0]["message"]["content"].strip()
+
+        # Return result in Lambda/API Gateway format
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"  # CORS fix
+            },
+            "body": json.dumps({
+                "prompt": prompt,
+                "story": story
+            })
+        }
+
+    except requests.exceptions.RequestException as e:
+        # Log and return error if API request fails
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": "API request failed"})
+        }
+    except Exception as e:
+        # Log and return error for other exceptions
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": f"Unhandled error: {str(e)}"})
+        }
