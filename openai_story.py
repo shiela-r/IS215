@@ -34,10 +34,7 @@ def story_generator(labels):
               f"Varied and metaphorical expressions should be used based on the labels, when possible, and label words should not be repeated exactly."
               f"You may include vague or suggestive descriptions, as long as you stay within what the label list allows."
               f"The article should be clear, faithful to the labels, and written in full sentences, 250 to 300 words."
-              f"Keep your descriptions grounded, witty, mature, purposeful, full of sense, sound, logical and valid, and giving precious and brilliant life lessons. Do not add anything extra."
-              f"Put the determined theme right below the end of the article. Precede it with 'Theme: ")
-    # the last line in the prompt can be removed once finalized, it is just for checking what them does the AI detect
-    # based from the labels provided (e.g. detected by AWS Rekognition)
+              f"Keep your descriptions grounded, witty, mature, purposeful, full of sense, sound, logical and valid, and giving precious and brilliant life lessons. Do not add anything extra.")
     
     # Calling Open API
     api_url = "https://is215-openai.upou.io/v1/chat/completions"
