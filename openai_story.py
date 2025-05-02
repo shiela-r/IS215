@@ -17,10 +17,25 @@ def story_generator(labels):
         scene = f"{', '.join(labels[:-1])}, and {labels[-1]}"
 
     # Creating prompt
-    prompt = (f"The image shows the following: {scene}. With these elements, determine a theme (e.g. sports, technology,"
-              f"politics, etc and based from that, generate a fictional news article. I prefer starting with a staccato"
-              f"lead. Do not add any elements not included among those listed above. Work with just the list given."
-              f"Put the determined theme right below the end of the article.")
+    prompt = (f"A short news article must be written based only on the given list of labels: {scene}"
+              f"With these elements, determine a theme (e.g. sports, technology,politics, etc and based from that, generate a fictional news article."
+              f"Start with a staccato lead."
+              f"The article must be written using only the physical objects or visible elements that are named in the label list."
+              f"No object, character, or visible detail that is not listed should be included."
+              f"If a label refers to something abstract, such as an emotion or activity, keep it abstract."
+              f"Do not turn it into a person, an action, or an event."
+              f"Treat nominalized words like “Studying” or “Happiness” as they are."
+              f"Do not convert them into subject-verb-object form."
+              f"Do not add people doing the action unless the label directly includes them."
+              f"You may describe general uses or cultural associations related to the labels, but only if it is clear that they are not visible in the image."
+              f"Do not create agents, events, sounds, or extra visual details."
+              f"Do not imply that anything is seen in the image unless it is listed in the labels."
+              f"Use plain English, philosophical, political, unslanted, eloquent, and abstract language, indirect phrasing, and also natural and conversational tone and with sense of humor."
+              f"Varied and metaphorical expressions should be used based on the labels, when possible, and label words should not be repeated exactly."
+              f"You may include vague or suggestive descriptions, as long as you stay within what the label list allows."
+              f"The article should be clear, faithful to the labels, and written in full sentences, 250 to 300 words."
+              f"Keep your descriptions grounded, witty, mature, purposeful, full of sense, sound, logical and valid, and giving precious and brilliant life lessons. Do not add anything extra."
+              f"Put the determined theme right below the end of the article. Precede it with 'Theme: ")
     # the last line in the prompt can be removed once finalized, it is just for checking what them does the AI detect
     # based from the labels provided (e.g. detected by AWS Rekognition)
     
