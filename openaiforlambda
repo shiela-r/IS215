@@ -1,7 +1,37 @@
-try:
-        labels = ["Window", "Table", "Books", "Library", "Quiet"]
+import boto3
+import json
+import urllib.request
+import urllib.error
+import os
 
-        # Sentence builder
+def lambda_handler(event, context):
+
+    s3_bucket = 'is215groupdproject'
+    s3_key = 'atmosphere.jpg'
+
+    client = boto3.client('rekognition')
+
+    # Detect labels in the image using Rekognition
+    response = client.detect_labels(
+        Image={'S3Object': {'Bucket': s3_bucket, 'Name': s3_key}},
+        MaxLabels=50,
+        MinConfidence=70
+    )
+
+    # Extract detected labels
+    detected_labels = [label['Name'] for label in response['Labels']]
+    found_objects = []
+
+    # Check for specific objects
+    # for obj in ['Person', 'Car', 'Vehicle', 'Bus', 'Truck']:
+    #    if obj in detected_labels:
+    #        found_objects.append(obj)
+
+    # Create a scene description based on detected labels
+    try:
+        labels = detected_labels
+
+        # Sentence builder for scene description
         if not labels:
             scene = "unknown scene"
         elif len(labels) == 1:
@@ -11,29 +41,23 @@ try:
         else:
             scene = f"{', '.join(labels[:-1])}, and {labels[-1]}"
 
-        # Prompt creation
-       prompt = (f"A short news article must be written based only on the given list of labels: {scene}"
-              f"With these elements, determine a theme (e.g. sports, technology,politics, etc), and based from that, generate a fictional news article."
-              f"Start with a staccato lead."
-              f"The article must be written using only the physical objects or visible elements that are named in the label list."
-              f"No object, character, or visible detail that is not listed should be included."
-              f"If a label refers to something abstract, such as an emotion or activity, keep it abstract."
-              f"Do not turn it into a person, an action, or an event."
-              f"Treat nominalized words like “Studying” or “Happiness” as they are."
-              f"Do not convert them into subject-verb-object form."
-              f"Do not add people doing the action unless the label directly includes them."
-              f"You may describe general uses or cultural associations related to the labels, but only if it is clear that they are not visible in the image."
-              f"Do not create agents, events, sounds, or extra visual details."
-              f"Do not imply that anything is seen in the image unless it is listed in the labels."
-              f"Use plain English, philosophical, political, unslanted, eloquent, and abstract language, indirect phrasing, and also natural and conversational tone and with sense of humor."
-              f"Varied and metaphorical expressions should be used based on the labels, when possible, and label words should not be repeated exactly."
-              f"You may include vague or suggestive descriptions, as long as you stay within what the label list allows."
-              f"The article should be clear, faithful to the labels, and written in full sentences, 250 to 300 words."
-              f"Keep your descriptions grounded, witty, mature, purposeful, full of sense, sound, logical and valid, and giving precious and brilliant life lessons. Do not add anything extra.")
+        # Prompt creation for OpenAI model
+        prompt = (f"A short news article must be written based only on the given list of labels: {scene}. "
+                  f"With these elements, determine a theme (e.g. sports, technology, politics, etc.), and based on that, generate a fictional news article. "
+                  f"Start with a staccato lead. "
+                  f"The article must be written using only the physical objects or visible elements that are named in the label list. "
+                  f"No object, character, or visible detail that is not listed should be included. "
+                  f"If a label refers to something abstract, such as an emotion or activity, keep it abstract. "
+                  f"Do not turn it into a person, an action, or an event. "
+                  f"Do not create agents, events, sounds, or extra visual details. "
+                  f"Use plain English, philosophical, political, unslanted, eloquent, and abstract language, indirect phrasing, and also a natural and conversational tone with a sense of humor. "
+                  f"Varied and metaphorical expressions should be used based on the labels, when possible, and label words should not be repeated exactly. "
+                  f"The article should be clear, faithful to the labels, and written in full sentences, 250 to 300 words. "
+                  f"Keep your descriptions grounded, witty, mature, purposeful, full of sense, sound, logical and valid, and giving precious and brilliant life lessons. Do not add anything extra.")
 
         # API call to OpenAI proxy
         api_url = "https://is215-openai.upou.io/v1/chat/completions"
-        api_key = "galang-0yvua8ytST"
+        api_key = os.environ.get("OPENAI_API_KEY")
 
         headers = {
             "Content-Type": "application/json",
@@ -49,9 +73,19 @@ try:
             "temperature": 0.7
         }
 
-        response = requests.post(api_url, headers=headers, json=payload)
-        response.raise_for_status()
-        data = response.json()
+        # Make HTTP request using urllib
+        req = urllib.request.Request(api_url, method='POST', headers=headers, data=json.dumps(payload).encode())
+        with urllib.request.urlopen(req) as response:
+            raw_response = response.read()
+            print("Raw response:", raw_response) 
+            data = json.loads(raw_response)
+
+        if "choices" not in data:
+            return {
+                "statusCode": 500,
+                "body": json.dumps({"error": f"Unexpected response from OpenAI: {data}"})
+            }
+
         story = data["choices"][0]["message"]["content"].strip()
 
         # Return result in Lambda/API Gateway format
@@ -67,11 +101,11 @@ try:
             })
         }
 
-    except requests.exceptions.RequestException as e:
+    except urllib.error.URLError as e:
         # Log and return error if API request fails
         return {
             "statusCode": 500,
-            "body": json.dumps({"error": "API request failed"})
+            "body": json.dumps({"error": f"API request failed: {str(e)}"})
         }
     except Exception as e:
         # Log and return error for other exceptions
