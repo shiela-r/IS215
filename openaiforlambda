@@ -1,5 +1,4 @@
 try:
-        # Preset labels (this could be based on your original Python code)
         labels = ["Window", "Table", "Books", "Library", "Quiet"]
 
         # Sentence builder
