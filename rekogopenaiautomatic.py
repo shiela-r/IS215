@@ -7,27 +7,38 @@ def lambda_handler(event, context):
     try:
         # Check if 'Records' exist in the event
         if 'Records' not in event or len(event['Records']) == 0:
-            raise ValueError("Event does not contain S3 records") #message to display if ran without the S3 trigger.
+            raise ValueError("Event does not contain S3 records")
 
+        # Extract S3 bucket and object details
         s3_info = event['Records'][0]['s3']
         s3_bucket = s3_info['bucket']['name']
         s3_key = s3_info['object']['key']
+        
+        # Log event details
+        print(f"Received event: {json.dumps(event)}")
+        print(f"Processing image: s3://{s3_bucket}/{s3_key}")
 
+        # Initialize Rekognition client
         client = boto3.client('rekognition')
 
+        # Detect labels in the image using Rekognition
         response = client.detect_labels(
             Image={'S3Object': {'Bucket': s3_bucket, 'Name': s3_key}},
             MaxLabels=50,
             MinConfidence=70
         )
 
+        # Extract detected labels
         detected_labels = [label['Name'] for label in response['Labels']]
-        found_objects = []
+        print(f"Detected labels: {detected_labels}")
 
+        # Check for specific objects of interest
+        found_objects = []
         for obj in ['Person', 'Car', 'Vehicle', 'Bus', 'Truck']:
             if obj in detected_labels:
                 found_objects.append(obj)
 
+        # Prepare scene description
         labels = detected_labels
         if not labels:
             scene = "unknown scene"
@@ -38,6 +49,7 @@ def lambda_handler(event, context):
         else:
             scene = f"{', '.join(labels[:-1])}, and {labels[-1]}"
 
+        # Prepare the prompt for OpenAI API
         prompt = (f"A short news article must be written based only on the given list of labels: {scene}. "
                   f"With these elements, determine a theme (e.g. sports, technology, politics, etc.), and based on that, generate a fictional news article. "
                   f"Start with a staccato lead. "
@@ -51,6 +63,10 @@ def lambda_handler(event, context):
                   f"The article should be clear, faithful to the labels, and written in full sentences, 250 to 300 words. "
                   f"Keep your descriptions grounded, witty, mature, purposeful, full of sense, sound, logical and valid, and giving precious and brilliant life lessons. Do not add anything extra.")
 
+        # Log the prompt
+        print(f"Prompt: {prompt}")
+
+        # API call to OpenAI proxy
         api_url = "https://is215-openai.upou.io/v1/chat/completions"
         api_key = "galang-0yvua8ytST"
 
@@ -73,18 +89,29 @@ def lambda_handler(event, context):
             data = json.loads(response.read())
             story = data["choices"][0]["message"]["content"].strip()
 
+        # Log the generated story
+        print(f"Generated story: {story}")
+
+        # Save the article to S3 (optional)
+        s3_client = boto3.client('s3')
+        output_key = f"articles/{s3_key.rsplit('.', 1)[0]}.txt"
+        s3_client.put_object(Bucket=s3_bucket, Key=output_key, Body=story.encode(), ContentType='text/plain')
+        print(f"Article saved to: s3://{s3_bucket}/{output_key}")
+
+        # Return response with article details
         return {
             "statusCode": 200,
             "headers": {
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
+                "Access-Control-Allow-Origin": "*"  # CORS fix
             },
             "body": json.dumps({
                 "bucket": s3_bucket,
                 "key": s3_key,
                 "labels": labels,
                 "prompt": prompt,
-                "story": story
+                "story": story,
+                "article_s3_url": f"s3://{s3_bucket}/{output_key}"
             })
         }
 
