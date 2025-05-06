@@ -9,10 +9,12 @@
     body {
       font-family: 'Poppins', sans-serif;
     }
+
     @keyframes fade-in {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
     .animate-fade-in {
       animation: fade-in 0.6s ease-out both;
     }
@@ -22,7 +24,7 @@
 
   <div class="bg-white rounded-2xl shadow-lg max-w-2xl w-full p-6 sm:p-8 space-y-6 animate-fade-in border border-blue-200">
     <header class="space-y-1">
-      <h1 class="text-3xl font-bold text-blue-800" id="title">Generated News Article</h1>
+      <h1 class="text-3xl font-bold text-blue-800" id="title">Loading title...</h1>
       <div class="text-sm text-gray-500">
         Uploaded by <span class="font-medium text-gray-700" id="authorName">Anonymous</span> • <span id="dateNow">Today</span>
       </div>
@@ -51,9 +53,9 @@
     }
 
     async function loadArticle() {
-      const fileURL = getQueryParam("file"); // full .txt URL
-      const imgURL = getQueryParam("img");   // full image URL
-      const name = getQueryParam("name");
+      const fileURL = getQueryParam("file"); // .txt URL
+      const imgURL = getQueryParam("img");   // image URL
+      const name = getQueryParam("name");    // uploader name (optional)
 
       if (!fileURL) {
         document.getElementById("articleContent").innerHTML = "<p>Error: No article file provided.</p>";
@@ -65,10 +67,13 @@
         if (!response.ok) throw new Error("Article not found");
 
         const text = await response.text();
-        document.getElementById("articleContent").innerHTML = text
-          .split('\n\n')
-          .map(p => `<p>${p}</p>`)
-          .join('');
+        const sections = text.split("\n\n");
+
+        const title = sections.shift()?.trim() || "Untitled Article";
+        const body = sections.map(p => `<p>${p.trim()}</p>`).join('');
+
+        document.getElementById("title").textContent = title;
+        document.getElementById("articleContent").innerHTML = body;
 
         if (imgURL) {
           document.getElementById("uploadedImage").src = decodeURIComponent(imgURL);
