@@ -46,15 +46,9 @@
       </div>
 
       <div>
-        <label for="prompt" class="block text-sm font-medium text-gray-700 mb-2">Optional Prompt</label>
-        <input type="text" name="prompt" id="prompt" placeholder="e.g., Describe the scene..."
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
-      </div>
-
-      <div>
         <label class="inline-flex items-center">
           <input type="checkbox" id="showNameCheckbox" class="form-checkbox text-blue-600" />
-          <span class="ml-2 text-sm text-gray-700">Do you want to show your name as the uploader?</span>
+          <span class="ml-2 text-sm text-gray-700">Show your name as uploader?</span>
         </label>
       </div>
 
@@ -62,7 +56,7 @@
         <label for="uploaderName" class="block text-sm font-medium text-gray-700 mb-2">
           Your Name <span class="text-red-500">*</span>
         </label>
-        <input type="text" name="uploaderName" id="uploaderName" placeholder="Enter your name"
+        <input type="text" id="uploaderName" placeholder="Enter your name"
           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" />
       </div>
 
@@ -89,15 +83,7 @@
       fileList.innerHTML = "";
       if (fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        const listItem = document.createElement('div');
-        listItem.className = "flex items-center space-x-2 mt-2";
-        listItem.innerHTML = `
-          <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 011.414-1.414L8.414 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-          </svg>
-          <span>${file.name}</span>
-        `;
-        fileList.appendChild(listItem);
+        fileList.innerHTML = `<div class="mt-2">${file.name}</div>`;
       }
     });
 
@@ -112,11 +98,11 @@
       let errors = [];
 
       if (!fileInput.files || fileInput.files.length === 0) {
-        errors.push("Please upload an image file before generating news.");
+        errors.push("Please upload an image file.");
       }
 
       if (showNameCheckbox.checked && uploaderName.value.trim() === "") {
-        errors.push("Please enter your name as the uploader.");
+        errors.push("Please enter your name.");
       }
 
       if (errors.length > 0) {
@@ -130,13 +116,17 @@
       }
 
       validationMessage.classList.add('hidden');
+
       const file = fileInput.files[0];
-      const baseName = file.name.split('.')[0];
+      const filename = file.name;
+      const baseName = filename.split('.')[0];
+      const bucket = "is-215-project";
+      const articleURL = `https://${bucket}.s3.amazonaws.com/articles/${baseName}.txt`;
+      const imageURL = `https://${bucket}.s3.amazonaws.com/${filename}`;
+      const uploader = showNameCheckbox.checked ? `&name=${encodeURIComponent(uploaderName.value.trim())}` : "";
 
-      const fileURL = `https://is-215-project.s3.amazonaws.com/articles/uploads/${baseName}.txt`;
-      const imageURL = `https://is-215-project.s3.amazonaws.com/uploads/${file.name}`;
-
-      window.location.href = `result.html?file=${encodeURIComponent(fileURL)}&img=${encodeURIComponent(imageURL)}`;
+      // Redirect to result page with query parameters
+      window.location.href = `result.html?file=${encodeURIComponent(articleURL)}&img=${encodeURIComponent(imageURL)}${uploader}`;
     });
   </script>
 </body>
