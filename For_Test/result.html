@@ -60,7 +60,7 @@
       }
 
       const txtFilename = filename.split('.')[0] + ".txt";
-      const fileURL = `https://is-215-project.s3.amazonaws.com/articles/uploads/${baseName}.txt 
+      const articlePath = `https://is-215-project.s3.amazonaws.com/articles/uploads/${txtFilename}`; 
 
       try {
         const response = await fetch(articlePath);
