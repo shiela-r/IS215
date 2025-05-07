@@ -38,13 +38,12 @@ def lambda_handler(event, context):
         else:
             scene = f"{', '.join(detected_labels[:-1])}, and {detected_labels[-1]}"
 
-        
         prompt = (
             f"Given the labels: {scene}, generate a JSON object with two fields: "
             f"'title' (a short, compelling headline using only the label concepts, basing from the theme and most important concepts of the body, max 12 words) and "
             f"'body' (a 250–300 word article strictly based on the same labels). "
             f"The body must:"
-			f"a) With these elements (labels), determine a theme (e.g. sports, technology, politics, etc.), and based on that, generate a fictional news article. "
+            f"a) With these elements (labels), determine a theme (e.g. sports, technology, politics, etc.), and based on that, generate a fictional news article. "
             f"b) Start with a staccato lead. "
             f"c) The article must be written using only the physical objects or visible elements that are named in the label list. "
             f"d) No object, character, or visible detail that is not listed should be included. "
@@ -55,12 +54,13 @@ def lambda_handler(event, context):
             f"i) Varied and metaphorical expressions should be used based on the labels, when possible, and label words should not be repeated exactly. "
             f"j) The article should be clear, faithful to the labels, and written in full sentences."
             f"k) Keep your descriptions grounded, witty, mature, purposeful, full of sense, sound, logical and valid, and giving precious and brilliant life lessons. Do not add anything extra."
-            f"Output only a JSON object: {{'title': '...', 'body': '...'}}.")
+            f"Output only a JSON object: {{'title': '...', 'body': '...'}}."
+        )
 
         print(f"Prompt: {prompt}")
 
         api_url = "https://is215-openai.upou.io/v1/chat/completions"
-        api_key = "galang-0yvua8ytST"
+        api_key = "delafuente-h1jIupXfvN"
 
         headers = {
             "Content-Type": "application/json",
@@ -76,30 +76,46 @@ def lambda_handler(event, context):
             "temperature": 0.7
         }
 
-        req = urllib.request.Request(api_url, method='POST', headers=headers, data=json.dumps(payload).encode())
-        with urllib.request.urlopen(req) as response:
-            data = json.loads(response.read())
-            response_text = data["choices"][0]["message"]["content"].strip()
-            print(f"Raw OpenAI response: {response_text}")
-            parsed = ast.literal_eval(response_text)
-            title = parsed.get("title", "Untitled")
-            body = parsed.get("body", "")
+        try:
+            req = urllib.request.Request(api_url, method='POST', headers=headers, data=json.dumps(payload).encode())
+            with urllib.request.urlopen(req) as response:
+                data = json.loads(response.read())
+                response_text = data["choices"][0]["message"]["content"].strip()
+                print(f"Raw OpenAI response: {response_text}")
+                parsed = ast.literal_eval(response_text)
+                title = parsed.get("title", "Untitled")
+                body = parsed.get("body", "")
+
+        except Exception as e:
+            print(f"Error during OpenAI API request: {str(e)}")  
+            raise
 
         full_article = f"{title}\n\n{body}"
-
         filename = s3_key.rsplit('/', 1)[-1].rsplit('.', 1)[0]
         output_key = f"articles/{filename}.txt"
 
         s3_client = boto3.client('s3')
-        s3_client.put_object(
-            Bucket=s3_bucket,
-            Key=output_key,
-            Body=full_article.encode(),
-            ContentType='text/plain',
-            ACL='public-read'
-        )
 
-        print(f"Article saved to: s3://{s3_bucket}/{output_key}")
+        
+        print(f"Writing to S3: Bucket={s3_bucket}, Key={output_key}")  
+        print(f"Content to write: {full_article}")  
+
+        try:
+            print(f"Writing to S3: Bucket={s3_bucket}, Key={output_key}")
+            print(f"Content to write: {full_article}")
+
+            s3_client.put_object(
+                Bucket=s3_bucket,
+                Key=output_key,
+                Body=full_article.encode(),
+                ContentType='text/plain',
+                
+            )
+            print(f"File successfully written to s3://{s3_bucket}/{output_key}")  
+
+        except Exception as e:
+            print(f"Error writing to S3: {str(e)}")  
+            raise
 
         return {
             "statusCode": 200,
@@ -119,11 +135,14 @@ def lambda_handler(event, context):
         }
 
     except urllib.error.URLError as e:
+        print(f"URL Error: {str(e)}")  
         return {
             "statusCode": 500,
             "body": json.dumps({"error": f"API request failed: {str(e)}"})
         }
+
     except Exception as e:
+        print(f"Unhandled error: {str(e)}")  
         return {
             "statusCode": 500,
             "body": json.dumps({"error": f"Unhandled error: {str(e)}"})
