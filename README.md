@@ -11,7 +11,7 @@ Images in JPG or PNG format can be uploaded by users. Each image is stored secur
 
 ### Environment
 A `.env` file is used to store API keys and sensitive data.<br>
-`AWS_ACCESS_KEY_ID=<your-access-key><br>
+` ```AWS_ACCESS_KEY_ID=<your-access-key><br>
 AWS_SECRET_ACCESS_KEY=<your-secret-key><br>
 S3_BUCKET=<your-s3-bucket-name><br>
 OPENAI_API_KEY=<your-openai-api-key><br>
