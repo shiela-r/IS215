@@ -10,10 +10,20 @@ Images in JPG or PNG format can be uploaded by users. Each image is stored secur
 ![Image Description](Structure.PNG) 
 
 ### Environment
-A `.env` file is used to store API keys and sensitive data. The setup is configured so that the S3 bucket triggers the Lambda function, deploying the function using the `rekogopenaiautomatic_v2.py` script. The function sends the detected labels to GPT-3.5-turbo, which returns a fictional news article based on the labels.
+A `.env` file is used to store API keys and sensitive data. 
+AWS_ACCESS_KEY_ID=<your-access-key>
+AWS_SECRET_ACCESS_KEY=<your-secret-key>
+S3_BUCKET=<your-s3-bucket-name>
+OPENAI_API_KEY=<your-openai-api-key>
+
+### S3 Bucket Configuration
+The setup is configured so that the S3 bucket triggers the Lambda function, deploying the function using the `rekogopenaiautomatic_v2.py` script. The function sends the detected labels to GPT-3.5-turbo, which returns a fictional news article based on the labels.
 
 ### Deployment
-The application runs on an EC2 instance. Once the instance is started, the application can be launched. Users access the upload page (`index.html`) to submit images. The resulting article and image can be viewed on the results page (`result.html`).
+The application runs on an EC2 instance. Once the instance is started, the application can be launched. 
+
+### Testing
+Users access the upload page (`index.html`) to submit images. The resulting article and image can be viewed on the results page (`result.html`).
 
 ### Guidelines
 To meet repository guidelines, API keys and sensitive data are excluded from version control. Best practices for handling AWS and OpenAI credentials were observed. The repository has been made public. Group member contributions were made via forks, pull requests, and direct commits.
