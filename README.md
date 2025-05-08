@@ -15,7 +15,7 @@ A `.env` file is used to store API keys and sensitive data.
 AWS_ACCESS_KEY_ID=<your-access-key>
 AWS_SECRET_ACCESS_KEY=<your-secret-key>
 S3_BUCKET=<your-s3-bucket-name>
-OPENAI_API_KEY=<your-openai-api-key> ```
+OPENAI_API_KEY=<your-openai-api-key> `
 
 ### S3 Bucket Configuration
 The setup is configured so that the S3 bucket triggers the Lambda function, deploying the function using the `rekogopenaiautomatic_v2.py` script. The function sends the detected labels to GPT-3.5-turbo, which returns a fictional news article based on the labels.
