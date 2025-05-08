@@ -56,7 +56,7 @@ def lambda_handler(event, context):
 
         # API call to OpenAI proxy
         api_url = "https://is215-openai.upou.io/v1/chat/completions"
-        api_key = "galang-0yvua8ytST"
+        api_key = os.environ.get("OPENAI_API_KEY")
 
         headers = {
             "Content-Type": "application/json",
