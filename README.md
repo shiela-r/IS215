@@ -16,7 +16,7 @@ A `.env` file is used to store API keys and sensitive data. The setup is configu
 The application runs on an EC2 instance. Once the instance is started, the application can be launched. Users access the upload page (`index.html`) to submit images. The resulting article and image can be viewed on the results page (`result.html`).
 
 ### Guidelines
-To meet repository guidelines, API keys and sensitive data are excluded from version control. Best practices for handling AWS and OpenAI credentials were observed. The repository has been made public. Group member contributions were made via forks and pull requests, with documentation supplied for each change.
+To meet repository guidelines, API keys and sensitive data are excluded from version control. Best practices for handling AWS and OpenAI credentials were observed. The repository has been made public. Group member contributions were made via forks, pull requests, and direct commits.
 
 ### License
 This project was designed for the IS215 course and is not intended for commercial use.
