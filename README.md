@@ -13,6 +13,7 @@ Images in JPG or PNG format can be uploaded by users. Each image is stored secur
 |--f.result.html # Results page with the article and image
 |--recogopenaiautomatic (final). py # Lambda function
 |--.nv # Environment file (not commited to repo)
+|--server.js
 |--README.md # Project documentation
 
 ### Environment
