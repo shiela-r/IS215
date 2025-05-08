@@ -60,7 +60,7 @@ def lambda_handler(event, context):
         print(f"Prompt: {prompt}")
 
         api_url = "https://is215-openai.upou.io/v1/chat/completions"
-        api_key = "delafuente-h1jIupXfvN"
+        api_key = os.environ.get("OPENAI_API_KEY")
 
         headers = {
             "Content-Type": "application/json",
