@@ -6,7 +6,7 @@ This web application was created for the **IS215 course** to turn photos into im
 ### Features
 Images in JPG or PNG format can be uploaded by users. Each image is stored securely in an S3 bucket.  A Lambda function is triggered once the image is stored and the the image is processed using Rekognition. This function generates labels from the image and submitted them as input to GPT-3.5-turbo to generate articles.
 
-### Repository Structure
+### Directory Structure
 ![Image Description](Structure.PNG) 
 
 ### Environment
