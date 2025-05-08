@@ -7,14 +7,7 @@ This web application was created for the **IS215 course** to turn photos into im
 Images in JPG or PNG format can be uploaded by users. Each image is stored securely in an S3 bucket.  A Lambda function is triggered once the image is stored and the the image is processed using Rekognition. This function generates labels from the image and submitted them as input to GPT-3.5-turbo to generate articles.
 
 ### Repository Structure
-
-/ main
-|--f.index.html # Upload page
-|--f.result.html # Results page with the article and image
-|--recogopenaiautomatic (final). py # Lambda function
-|--.nv # Environment file (not commited to repo)
-|--server.js
-|--README.md # Project documentation
+![Image Description](Structure.PNG) 
 
 ### Environment
 A `.env` file is used to store API keys and sensitive data. The setup is configured so that the S3 bucket triggers the Lambda function, deploying the function using the `rekogopenaiautomatic_v2.py` script. The function sends the detected labels to GPT-3.5-turbo, which returns a fictional news article based on the labels.
