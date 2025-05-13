@@ -10,15 +10,15 @@ def story_generator(labels):
     if not labels:
         scene = "unknown scene"
     elif len(labels) == 1:
-        scene = f"scene with: {labels[0]}"
+        scene = f"scene with {labels[0]}"
     elif len(labels) == 2:
-        scene = f"scene with:{labels[0]} and {labels[1]}"
+        scene = f"scene with {labels[0]} and {labels[1]}"
     else:
-        scene = f"scene with:{', '.join(labels[:-1])}, and {labels[-1]}"
+        scene = f"scene with {', '.join(labels[:-1])}, and {labels[-1]}"
 
     # Creating prompt
-    prompt = (f"Write a fictional article based on this scene: {scene}.")
-    
+    prompt = f"Write a fictional article based on this scene: {scene}."
+
     # Calling Open API
     api_url = "https://is215-openai.upou.io/v1/chat/completions"
     api_key = os.environ.get("OPENAI_API_KEY")
@@ -35,7 +35,6 @@ def story_generator(labels):
         return prompt, story
     except ValueError:
         story = f"Error: cannot decode response as JSON.\nRaw response:\n{response.text}"
-        return prompt, story
     except Exception as e:
         return prompt, f"Error: {str(e)}"
     

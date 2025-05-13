@@ -1,0 +1,133 @@
+import boto3
+import json
+import urllib.request
+import urllib.error 
+
+def lambda_handler(event, context):
+    try:
+        # Check if 'Records' exist in the event
+        if 'Records' not in event or len(event['Records']) == 0:
+            raise ValueError("Event does not contain S3 records")
+
+        # Extract S3 bucket and object details
+        s3_info = event['Records'][0]['s3']
+        s3_bucket = s3_info['bucket']['name']
+        s3_key = s3_info['object']['key']
+        
+        # Log event details
+        print(f"Received event: {json.dumps(event)}")
+        print(f"Processing image: s3://{s3_bucket}/{s3_key}")
+
+        # Initialize Rekognition client
+        client = boto3.client('rekognition')
+
+        # Detect labels in the image using Rekognition
+        response = client.detect_labels(
+            Image={'S3Object': {'Bucket': s3_bucket, 'Name': s3_key}},
+            MaxLabels=50,
+            MinConfidence=70
+        )
+
+        # Extract detected labels
+        detected_labels = [label['Name'] for label in response['Labels']]
+        print(f"Detected labels: {detected_labels}")
+
+        # Check for specific objects of interest
+        found_objects = []
+        for obj in ['Person', 'Car', 'Vehicle', 'Bus', 'Truck']:
+            if obj in detected_labels:
+                found_objects.append(obj)
+
+        # Prepare scene description
+        labels = detected_labels
+        if not labels:
+            scene = "unknown scene"
+        elif len(labels) == 1:
+            scene = f"{labels[0]}"
+        elif len(labels) == 2:
+            scene = f"{labels[0]} and {labels[1]}"
+        else:
+            scene = f"{', '.join(labels[:-1])}, and {labels[-1]}"
+
+        # Prepare the prompt for OpenAI API
+        prompt = (
+            f"Given the labels: {scene}, generate a JSON object with two fields: "
+            f"'title' (a short, compelling headline using only the label concepts, basing from the theme and most important concepts of the body, max 12 words) and "
+            f"'body' (a 250–300 word article strictly based on the same labels). "
+            f"The body must:"
+            f"a) With these elements (labels), determine a theme (e.g. sports, technology, politics, etc.), and based on that, generate a fictional news article. "
+            f"b) Start with a staccato lead. "
+            f"c) The article must be written using only the physical objects or visible elements that are named in the label list. "
+            f"d) No object, character, or visible detail that is not listed should be included. "
+            f"e) If a label refers to something abstract, such as an emotion or activity, keep it abstract. "
+            f"f) Do not turn it into a person, an action, or an event. "
+            f"g) Do not create agents, events, sounds, or extra visual details. "
+            f"h) Use plain English, philosophical, political, unslanted, eloquent, and abstract language, indirect phrasing, and also a natural and conversational tone with a sense of humor. "
+            f"i) Varied and metaphorical expressions should be used based on the labels, when possible, and label words should not be repeated exactly. "
+            f"j) The article should be clear, faithful to the labels, and written in full sentences."
+            f"k) Keep your descriptions grounded, witty, mature, purposeful, full of sense, sound, logical and valid, and giving precious and brilliant life lessons. Do not add anything extra."
+            f"Output only a JSON object: {{'title': '...', 'body': '...'}}."
+        )
+
+        # Log the prompt
+        print(f"Prompt: {prompt}")
+
+        # API call to OpenAI proxy
+        api_url = "https://is215-openai.upou.io/v1/chat/completions"
+        api_key = os.environ.get("OPENAI_API_KEY")
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
+
+        payload = {
+            "model": "gpt-3.5-turbo",
+            "messages": [
+                {"role": "system", "content": "you are a journalist that writes only based on the facts given to you and nothing more."},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.7
+        }
+
+        req = urllib.request.Request(api_url, method='POST', headers=headers, data=json.dumps(payload).encode())
+        with urllib.request.urlopen(req) as response:
+            data = json.loads(response.read())
+            story = data["choices"][0]["message"]["content"].strip()
+
+        # Log the generated story
+        print(f"Generated story: {story}")
+
+        # Save the article to S3 (optional)
+        s3_client = boto3.client('s3')
+        output_key = f"articles/{s3_key.rsplit('.', 1)[0]}.txt"
+        s3_client.put_object(Bucket=s3_bucket, Key=output_key, Body=story.encode(), ContentType='text/plain')
+        print(f"Article saved to: s3://{s3_bucket}/{output_key}")
+
+        # Return response with article details
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*"  # CORS fix
+            },
+            "body": json.dumps({
+                "bucket": s3_bucket,
+                "key": s3_key,
+                "labels": labels,
+                "prompt": prompt,
+                "story": story,
+                "article_s3_url": f"s3://{s3_bucket}/{output_key}"
+            })
+        }
+
+    except urllib.error.URLError as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": f"API request failed: {str(e)}"})
+        }
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": f"Unhandled error: {str(e)}"})
+        }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>News Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fade-in 0.6s ease-out both;
+        }
+    </style>
+</head>
+<body class="bg-blue-100 min-h-screen flex items-center justify-center px-4 py-10">
+
+    <div class="bg-white rounded-2xl shadow-lg max-w-2xl w-full p-6 sm:p-8 space-y-6 animate-fade-in border border-blue-200">
+        <header class="space-y-1">
+            <h1 class="text-3xl font-bold text-blue-800">The Future of AI-Powered Journalism</h1>
+            <div class="text-sm text-gray-500">
+                Uploaded by <span class="font-medium text-gray-700">[Author Name]</span> • <span>[Date Posted]</span>
+            </div>
+        </header>
+
+        <div class="w-full">
+            <img src="https://via.placeholder.com/600x300" alt="News Thumbnail"
+                 class="rounded-xl border border-blue-200 shadow-md w-full object-cover">
+        </div>
+
+        <article class="text-gray-700 leading-relaxed text-justify space-y-4">
+            <p>
+                In a groundbreaking development, artificial intelligence has started generating real-time news stories based on user prompts and uploaded images. This approach offers a new way of interpreting events and delivering information instantly.
+            </p>
+            <p>
+                Analysts believe this shift could reshape the future of journalism by combining machine learning, automation, and human oversight. As the line between reader and contributor blurs, people may begin to consume more personalized, image-driven news content.
+            </p>
+            <p>
+                While this innovation opens up many possibilities, it also calls for strong ethical standards to ensure accuracy, credibility, and responsibility in reporting.
+            </p>
+        </article>
+
+        <div class="pt-4 text-center">
+            <a href="/" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-xl transition duration-300 shadow-sm">
+                Back to Upload
+            </a>
+        </div>
+    </div>
+
+</body>
+</html>
